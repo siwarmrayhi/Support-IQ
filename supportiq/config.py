@@ -13,7 +13,7 @@ class Settings(BaseSettings):
     )
 
     google_api_key: str
-    llm_model: str = "gemini-2.5-flash"
+    llm_model: str = "gemini-3.6-flash"
     embedding_model: str = "BAAI/bge-m3"
     embedding_device: str = "cpu"
 

@@ -14,3 +14,7 @@ pydantic-settings>=2.0
 
 # Tests
 pytest>=8.0
+# lit l'en-tête YAML de tes fichiers
+python-frontmatter>=1.1
+# le connecteur LangChain vers ChromaDB
+langchain-chroma>=0.2
