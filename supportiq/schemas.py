@@ -12,3 +12,21 @@ class DocumentGrade(BaseModel):
     reason: str = Field(
         description="Justification breve du jugement, une phrase maximum."
     )
+    
+class SingleGrade(BaseModel):
+    """Verdict pour un document identifie par son index dans la liste envoyee."""
+
+    document_index: int = Field(
+        description="Index du document evalue, correspondant a son numero dans la liste fournie (commence a 0)."
+    )
+    is_relevant: bool = Field(
+        description="Vrai si ce document aide reellement a repondre au ticket."
+    )
+
+
+class GradeBatch(BaseModel):
+    """Verdicts pour l'ensemble des documents recuperes, en un seul appel."""
+
+    grades: list[SingleGrade] = Field(
+        description="Un verdict par document fourni, dans n'importe quel ordre, un seul par index."
+    )

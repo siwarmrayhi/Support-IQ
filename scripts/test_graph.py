@@ -1,13 +1,18 @@
-"""Teste le graphe minimal retrieve -> grade_documents."""
+"""Teste le graphe complet avec branchement conditionnel."""
 
 from supportiq.graph.workflow import graph
+import time
+
+
+
+def run(ticket: str) -> None:
+    result = graph.invoke({"ticket": ticket})
+    print(f"\nTicket   : {ticket}")
+    print(f"Statut   : {result['status']}")
+    print(f"Pertinents : {[d.metadata.get('doc_id') for d in result['relevant_docs']]}")
+    print(f"Reponse  : {result['answer']}")
+
 
 if __name__ == "__main__":
-    result = graph.invoke({
-    "ticket": "Mon paiement a échoué et mon abonnement vient d'être suspendu. Est-ce que mes projets sont conservés, et de combien de temps je dispose pour régulariser ?"
-})
-
-    print(f"Documents recuperes : {len(result['retrieved_docs'])}")
-    print(f"Documents pertinents : {len(result['relevant_docs'])}")
-    for doc in result["relevant_docs"]:
-        print(f"  - {doc.metadata.get('doc_id')}")
+    run("J'ai oublié mon mot de passe, comment le réinitialiser ?")
+    run("Est-ce que CloudDesk propose un paiement échelonné en plusieurs mensualités ?")
