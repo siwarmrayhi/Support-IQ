@@ -18,3 +18,5 @@ pytest>=8.0
 python-frontmatter>=1.1
 # le connecteur LangChain vers ChromaDB
 langchain-chroma>=0.2
+#LangGraph
+langgraph>=1.0

@@ -33,7 +33,7 @@ def build_index(chunks: list) -> None:
     )
 
     settings.index_dir.mkdir(parents=True, exist_ok=True)
-
+    #cree un index a partir du doc
     Chroma.from_documents(
         documents=chunks,
         embedding=embeddings,
