@@ -12,3 +12,5 @@ class SupportState(TypedDict):
     grading_done: bool
     answer: str | None
     status: Literal["auto_response", "human_review_required"] | None
+    is_grounded: bool | None
+    generation_attempts: int

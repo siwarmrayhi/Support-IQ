@@ -30,3 +30,21 @@ class GradeBatch(BaseModel):
     grades: list[SingleGrade] = Field(
         description="Un verdict par document fourni, dans n'importe quel ordre, un seul par index."
     )
+    
+class AnswerValidation(BaseModel):
+    """Verdict sur l'ancrage d'une reponse generee dans ses sources."""
+
+    is_grounded: bool = Field(
+        description=(
+            "Vrai si TOUTES les affirmations de la reponse sont "
+            "explicitement appuyees par les documents fournis. Faux si "
+            "la reponse contient une information absente des documents."
+        )
+    )
+    unsupported_claim: str | None = Field(
+        default=None,
+        description=(
+            "Si is_grounded est faux, cite brievement l'affirmation "
+            "problematique. Sinon, laisser vide."
+        )
+    )
