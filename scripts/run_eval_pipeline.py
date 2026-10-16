@@ -4,16 +4,34 @@ sur les 20 tickets du dataset."""
 import json
 import time
 
+import httpx
+
 from supportiq.config import settings
 from supportiq.graph.workflow import graph
 
 PAUSE_BETWEEN_TICKETS = 5  # secondes, marge de securite face au quota
+MAX_RETRIES = 3
+RETRY_PAUSE = 10  # secondes
 
 
 def load_dataset() -> list[dict]:
     path = settings.raw_data_dir.parent.parent / "eval" / "dataset.jsonl"
     with open(path, encoding="utf-8") as f:
         return [json.loads(line) for line in f if line.strip()]
+
+
+def invoke_with_retry(ticket_text: str) -> dict:
+    """Relance le graphe si la connexion reseau est coupee en cours d'appel."""
+    for attempt in range(1, MAX_RETRIES + 1):
+        try:
+            return graph.invoke(
+                {"ticket": ticket_text, "generation_attempts": 0}
+            )
+        except httpx.TransportError as exc:
+            print(f"  [reseau] tentative {attempt}/{MAX_RETRIES} : {type(exc).__name__}")
+            if attempt == MAX_RETRIES:
+                raise
+            time.sleep(RETRY_PAUSE)
 
 
 def run() -> None:
@@ -26,7 +44,7 @@ def run() -> None:
     total_answer_cases = 0
 
     for i, ticket in enumerate(tickets):
-        result = graph.invoke({"ticket": ticket["ticket"]})
+        result = invoke_with_retry(ticket["ticket"])
         expected = ticket["expected_status"]
         actual = result["status"]
 
