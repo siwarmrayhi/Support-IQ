@@ -10,7 +10,11 @@ _PROMPT = """Tu verifies si une reponse de support client est \
 entierement fondee sur les documents fournis, sans aucune information \
 ajoutee, devinee ou extrapolee. Une reponse qui reformule ou resume \
 fidelement le contenu des documents est consideree comme fondee, meme \
-si elle n'utilise pas les memes mots.
+si elle n'utilise pas les memes mots. Si la reponse indique \
+explicitement qu'un point du ticket n'est pas couvert par les \
+documents fournis, cette declaration est consideree comme fondee : \
+signaler honnetement une absence d'information n'est pas une \
+affirmation a verifier.
 
 Documents source :
 {documents}
