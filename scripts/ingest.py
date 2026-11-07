@@ -7,6 +7,7 @@ from langchain_huggingface import HuggingFaceEmbeddings
 
 from supportiq.config import settings
 from supportiq.rag.chunking import chunk_document
+from supportiq.rag.vector_store import COLLECTION_NAME, get_embeddings
 
 
 def load_all_chunks() -> list:
@@ -26,19 +27,13 @@ def load_all_chunks() -> list:
 
 def build_index(chunks: list) -> None:
     """Encode les chunks et les stocke dans ChromaDB."""
-    embeddings = HuggingFaceEmbeddings(
-        model_name=settings.embedding_model,
-        model_kwargs={"device": settings.embedding_device},
-        encode_kwargs={"normalize_embeddings": True},
-    )
-
     settings.index_dir.mkdir(parents=True, exist_ok=True)
-    #cree un index a partir du doc
+
     Chroma.from_documents(
         documents=chunks,
-        embedding=embeddings,
+        embedding=get_embeddings(),
         persist_directory=str(settings.index_dir),
-        collection_name="supportiq",
+        collection_name=COLLECTION_NAME,
     )
 
 

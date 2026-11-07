@@ -2,7 +2,7 @@
 
 from langchain_chroma import Chroma
 from langchain_huggingface import HuggingFaceEmbeddings
-
+from supportiq.rag.vector_store import get_vector_store
 from supportiq.config import settings
 
 
@@ -23,7 +23,7 @@ def load_vector_store() -> Chroma:
 
 def search(query: str, k: int = 4) -> None:
     """Affiche les k chunks les plus proches d'une requête."""
-    store = load_vector_store()
+    store = get_vector_store()
     results = store.similarity_search_with_score(query, k=k)
 
     print(f"\nRequête : {query!r}")

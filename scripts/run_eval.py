@@ -7,6 +7,7 @@ from langchain_huggingface import HuggingFaceEmbeddings
 
 from supportiq.config import settings
 from supportiq.eval_metrics import EvalReport, TicketResult
+from supportiq.rag.vector_store import get_vector_store
 
 K = 4
 
@@ -18,17 +19,7 @@ def load_dataset() -> list[dict]:
         return [json.loads(line) for line in f if line.strip()]
 
 
-def load_vector_store() -> Chroma:
-    embeddings = HuggingFaceEmbeddings(
-        model_name=settings.embedding_model,
-        model_kwargs={"device": settings.embedding_device},
-        encode_kwargs={"normalize_embeddings": True},
-    )
-    return Chroma(
-        persist_directory=str(settings.index_dir),
-        embedding_function=embeddings,
-        collection_name="supportiq",
-    )
+
 
 
 def retrieve_doc_ids(store: Chroma, query: str, k: int) -> list[str]:
@@ -44,7 +35,7 @@ def retrieve_doc_ids(store: Chroma, query: str, k: int) -> list[str]:
 
 def run() -> None:
     tickets = load_dataset()
-    store = load_vector_store()
+    store = get_vector_store()
     report = EvalReport()
 
     for ticket in tickets:
