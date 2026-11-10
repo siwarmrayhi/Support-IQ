@@ -5,4 +5,4 @@ __pycache__/
 data/index/
 .pytest_cache/
 .ipynb_checkpoints/
-eval/results/
+eval/results/data/ocr_samples/

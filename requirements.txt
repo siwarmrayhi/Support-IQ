@@ -20,3 +20,8 @@ python-frontmatter>=1.1
 langchain-chroma>=0.2
 #LangGraph
 langgraph>=1.0
+
+# OCR
+pytesseract>=0.3
+pillow>=10.0
+pymupdf>=1.24

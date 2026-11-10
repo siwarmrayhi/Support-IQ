@@ -5,6 +5,7 @@ from pathlib import Path
 import frontmatter
 from langchain_core.documents import Document
 from langchain_text_splitters import RecursiveCharacterTextSplitter
+from supportiq.rag.pdf_loader import extract_pdf
 
 # Un token français fait environ 0,75 mot en moyenne avec bge-m3.
 _LONG_TEXT_SPLITTER = RecursiveCharacterTextSplitter(
@@ -59,9 +60,36 @@ def chunk_long_text(metadata: dict, content: str) -> list[Document]:
         for i, fragment in enumerate(fragments)
     ]
 
+_FOLDER_TO_SOURCE_TYPE = {
+    "documentation": "documentation",
+    "faq": "faq",
+    "guides": "guide",
+    "tickets": "historical_ticket",
+}
+
+
+def chunk_pdf(path: Path) -> list[Document]:
+    """PDF : le dossier donne le type, le nom du fichier donne l'identifiant."""
+    source_type = _FOLDER_TO_SOURCE_TYPE.get(path.parent.name)
+    if source_type is None:
+        raise ValueError(f"Dossier '{path.parent.name}' inconnu pour {path.name}")
+
+    text, extraction = extract_pdf(path)
+    metadata = {
+        "doc_id": path.stem,
+        "title": path.stem.replace("_", " "),
+        "source_type": source_type,
+        "extraction": extraction,
+    }
+
+    if source_type == "historical_ticket":
+        return chunk_ticket(metadata, text)
+    return chunk_long_text(metadata, text)
 
 def chunk_document(path: Path) -> list[Document]:
     """Point d'entrée : choisit la bonne stratégie selon source_type."""
+    if path.suffix.lower() == ".pdf":
+            return chunk_pdf(path)
     metadata, content = load_raw_document(path)
     source_type = metadata.get("source_type")
 
