@@ -14,3 +14,4 @@ class SupportState(TypedDict):
     status: Literal["auto_response", "human_review_required"] | None
     is_grounded: bool | None
     generation_attempts: int
+    sources: list[dict]
