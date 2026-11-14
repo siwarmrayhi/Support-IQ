@@ -5,7 +5,7 @@ from pathlib import Path
 import frontmatter
 from langchain_core.documents import Document
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from supportiq.rag.pdf_loader import extract_pdf
+from supportiq.rag.pdf_loader import MIN_CHARS, extract_pdf
 
 # Un token français fait environ 0,75 mot en moyenne avec bge-m3.
 _LONG_TEXT_SPLITTER = RecursiveCharacterTextSplitter(
@@ -75,6 +75,8 @@ def chunk_pdf(path: Path) -> list[Document]:
         raise ValueError(f"Dossier '{path.parent.name}' inconnu pour {path.name}")
 
     text, extraction = extract_pdf(path)
+    if len(text.strip()) < MIN_CHARS:
+            return []
     metadata = {
         "doc_id": path.stem,
         "title": path.stem.replace("_", " "),

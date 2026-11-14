@@ -26,7 +26,10 @@ def load_all_chunks() -> list:
 
     for path in files:
         chunks = chunk_document(path)
-        extraction = chunks[0].metadata.get("extraction", "natif") if chunks else "-"
+        if not chunks:
+            print(f"  ATTENTION : {path.name} -> aucun texte extrait, document ignoré")
+            continue
+        extraction = chunks[0].metadata.get("extraction", "natif")
         print(f"  {path.name:45s} -> {len(chunks)} chunk(s) [{extraction}]")
         all_chunks.extend(chunks)
 
