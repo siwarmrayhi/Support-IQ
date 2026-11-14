@@ -4,6 +4,8 @@ from typing import Literal
 
 from supportiq.graph.state import SupportState
 
+MAX_GENERATION_ATTEMPTS = 2
+
 
 def route_after_grading(
     state: SupportState,
@@ -14,7 +16,6 @@ def route_after_grading(
     return "escalate"
 
 
-MAX_GENERATION_ATTEMPTS = 2
 
 def route_after_validation(
     state: SupportState,
