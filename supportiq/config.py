@@ -19,6 +19,7 @@ class Settings(BaseSettings):
 
     raw_data_dir: Path = PROJECT_ROOT / "data" / "raw"
     index_dir: Path = PROJECT_ROOT / "data" / "index"
+    database_path: Path = PROJECT_ROOT / "data" / "supportiq.db"
 
 
 settings = Settings()

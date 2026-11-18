@@ -7,3 +7,4 @@ data/index/
 .ipynb_checkpoints/
 eval/results/
 data/ocr_samples/
+data/*.db
