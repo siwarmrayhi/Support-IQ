@@ -4,8 +4,11 @@ from fastapi import FastAPI
 
 from supportiq.api.schemas import TicketRequest, TicketResponse
 from supportiq.graph.workflow import graph
+from supportiq.api.routes_auth import router as auth_router
 
 app = FastAPI(title="SupportIQ")
+
+app.include_router(auth_router)
 
 
 @app.get("/health")
