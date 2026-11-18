@@ -13,6 +13,8 @@ class Settings(BaseSettings):
     )
 
     google_api_key: str
+    jwt_secret: str
+    access_token_minutes: int = 60
     llm_model: str = "gemini-3.5-flash-lite"
     embedding_model: str = "BAAI/bge-m3"
     embedding_device: str = "cpu"
