@@ -1,14 +1,19 @@
-"""Contrat de l'API : ce que le guichet reçoit et ce qu'il renvoie."""
+"""Contrat de l'API : ce que les guichets reçoivent et renvoient."""
 
-from typing import Literal
+from datetime import datetime
+from typing import Annotated
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, StringConstraints
 
-from supportiq.db.models import Role
+from supportiq.db.models import Role, TicketStatus
+
+TicketText = Annotated[
+    str, StringConstraints(strip_whitespace=True, min_length=1, max_length=5000)
+]
 
 
 class TicketRequest(BaseModel):
-    ticket: str = Field(min_length=1, max_length=5000)
+    ticket: TicketText
 
 
 class SourceItem(BaseModel):
@@ -17,11 +22,20 @@ class SourceItem(BaseModel):
     source_type: str | None = None
 
 
-class TicketResponse(BaseModel):
-    status: Literal["auto_response", "human_review_required"]
-    answer: str | None
+class TicketOut(BaseModel):
+    id: int
+    text: str
+    decision: str
+    status: TicketStatus
+    ai_answer: str | None
     sources: list[SourceItem]
-    
+    manager_reply: str | None
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
 class SignupRequest(BaseModel):
     email: str = Field(pattern=r"^[^@\s]+@[^@\s]+\.[^@\s]+$", max_length=255)
     full_name: str = Field(min_length=1, max_length=120)
