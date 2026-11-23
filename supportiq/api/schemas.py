@@ -1,7 +1,7 @@
 """Contrat de l'API : ce que les guichets reçoivent et renvoient."""
 
 from datetime import datetime
-from typing import Annotated
+from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, StringConstraints
 
@@ -34,6 +34,19 @@ class TicketOut(BaseModel):
     updated_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
+
+class ManagerTicketOut(TicketOut):
+    client_name: str
+    client_email: str
+    assigned_to_name: str | None = None
+
+
+class ReplyRequest(BaseModel):
+    reply: TicketText
+
+
+class StatusChangeRequest(BaseModel):
+    status: Literal["in_progress", "pending_review"]
 
 
 class SignupRequest(BaseModel):

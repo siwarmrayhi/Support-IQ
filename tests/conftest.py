@@ -13,6 +13,7 @@ from supportiq.api.routes_auth import router as auth_router
 from supportiq.api.routes_tickets import router as tickets_router
 from supportiq.db import models  # noqa: F401 (enregistre les tables)
 from supportiq.db.database import Base
+from supportiq.api.routes_manager import router as manager_router
 
 
 @pytest.fixture()
@@ -38,6 +39,7 @@ def client(session_factory):
     app = FastAPI()
     app.include_router(auth_router)
     app.include_router(tickets_router)
+    app.include_router(manager_router)
     app.dependency_overrides[get_db] = override_get_db
 
     with TestClient(app) as test_client:

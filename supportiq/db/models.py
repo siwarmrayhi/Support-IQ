@@ -61,3 +61,4 @@ class Ticket(Base):
     client: Mapped[User] = relationship(
         back_populates="tickets", foreign_keys=[client_id]
     )
+    assigned_to: Mapped[User | None] = relationship(foreign_keys=[assigned_to_id])
