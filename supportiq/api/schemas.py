@@ -39,6 +39,7 @@ class ManagerTicketOut(TicketOut):
     client_name: str
     client_email: str
     assigned_to_name: str | None = None
+    assigned_to_id: int | None = None
 
 
 class ReplyRequest(BaseModel):

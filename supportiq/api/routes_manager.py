@@ -23,7 +23,9 @@ def to_manager_out(ticket: Ticket) -> ManagerTicketOut:
         **data,
         client_name=ticket.client.full_name,
         client_email=ticket.client.email,
+        assigned_to_id=ticket.assigned_to_id,
         assigned_to_name=ticket.assigned_to.full_name if ticket.assigned_to else None,
+        
     )
 
 

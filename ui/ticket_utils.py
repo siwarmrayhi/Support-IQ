@@ -30,6 +30,8 @@ def filter_tickets(tickets: list[dict], query: str = "", status: str | None = No
                     ticket["text"],
                     ticket.get("ai_answer") or "",
                     ticket.get("manager_reply") or "",
+                    ticket.get("client_name") or "",
+                    ticket.get("client_email") or "",
                 ]
             )
         )

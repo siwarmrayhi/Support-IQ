@@ -61,3 +61,18 @@ def list_tickets(token: str) -> list[dict]:
 
 def create_ticket(token: str, text: str) -> dict:
     return _request("POST", "/tickets", token=token, json={"ticket": text})
+
+def manager_tickets(token: str) -> list[dict]:
+    return _request("GET", "/manager/tickets", token=token)
+
+
+def change_status(token: str, ticket_id: int, status: str) -> dict:
+    return _request(
+        "PATCH", f"/manager/tickets/{ticket_id}/status", token=token, json={"status": status}
+    )
+
+
+def reply_to_ticket(token: str, ticket_id: int, text: str) -> dict:
+    return _request(
+        "POST", f"/manager/tickets/{ticket_id}/reply", token=token, json={"reply": text}
+    )

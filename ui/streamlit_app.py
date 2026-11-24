@@ -224,12 +224,20 @@ def go(page: str) -> None:
     st.session_state["page"] = page
 
 
-def client_area(user: dict, token: str) -> None:
-    current = st.session_state.get("page", NAV[0][0])
+MANAGER_NAV = [
+    ("Tableau de bord", ":material/dashboard:"),
+    ("Tickets", ":material/view_kanban:"),
+]
+KANBAN_STATUSES = ["pending_review", "in_progress", "resolved"]
+MAX_PER_COLUMN = 20
+
+
+def sidebar(nav: list, user: dict) -> str:
+    current = st.session_state.get("page", nav[0][0])
     with st.sidebar:
         st.markdown(BRAND_HTML, unsafe_allow_html=True)
         st.write("")
-        for label, icon in NAV:
+        for label, icon in nav:
             st.button(
                 label,
                 icon=icon,
@@ -242,7 +250,11 @@ def client_area(user: dict, token: str) -> None:
         st.caption(f"Connecté : {user['full_name']}")
         if st.button("Se déconnecter", icon=":material/logout:", key="logout"):
             logout()
+    return current
 
+
+def client_area(user: dict, token: str) -> None:
+    current = sidebar(NAV, user)
     if current == "Tableau de bord":
         dashboard_page(token, user)
     elif current == "Nouveau ticket":
@@ -251,11 +263,115 @@ def client_area(user: dict, token: str) -> None:
         history_page(token)
 
 
-def manager_placeholder() -> None:
-    page_header("Espace gestionnaire", "Le tableau kanban arrive à une prochaine étape.")
-    if st.button("Se déconnecter", key="logout_manager"):
-        logout()
+def run_action(action, *args) -> None:
+    try:
+        action(*args)
+    except api_client.ApiError as exc:
+        handle_error(exc)
+    else:
+        st.rerun()
 
+
+def manager_dashboard(token: str) -> None:
+    page_header("Tableau de bord", "Vue d'ensemble de l'activité du support.")
+    try:
+        tickets = api_client.manager_tickets(token)
+    except api_client.ApiError as exc:
+        handle_error(exc)
+        return
+    if not tickets:
+        st.info("Aucun ticket pour le moment.")
+        return
+
+    stats = compute_stats(tickets)
+    cards = [
+        ("Tickets reçus", stats["total"], "🎫", "blue"),
+        ("À traiter", stats["pending"], "📥", "orange"),
+        ("En cours", stats["in_progress"], "💬", "teal"),
+        ("Terminés", stats["resolved"], "✅", "green"),
+    ]
+    for column, card in zip(st.columns(4), cards):
+        column.markdown(kpi_card(*card), unsafe_allow_html=True)
+
+    st.write("")
+    left, right = st.columns(2)
+    with left, st.container(border=True):
+        st.markdown("**Taux de réponse automatique**")
+        st.plotly_chart(auto_rate_gauge(stats["auto_rate"]), key="m_gauge")
+    with right, st.container(border=True):
+        st.markdown("**Répartition par statut**")
+        st.plotly_chart(status_donut(stats), key="m_donut")
+
+
+def kanban_card(token: str, user: dict, ticket: dict) -> None:
+    ticket_id = ticket["id"]
+    status = ticket["status"]
+    mine = ticket["assigned_to_id"] in (None, user["id"])
+    with st.container(border=True):
+        st.markdown(f"**Ticket #{ticket_id}**")
+        st.caption(f"{ticket['client_name']} · {format_date(ticket['created_at'])}")
+        st.text(shorten(ticket["text"], 160))
+
+        if status == "resolved":
+            who = "Réponse automatique" if ticket["decision"] == "auto_response" else "Réponse de l'agent"
+            with st.expander(who):
+                st.write(ticket["manager_reply"] or ticket["ai_answer"] or "")
+            return
+
+        if ticket["assigned_to_name"]:
+            st.caption(f"Pris en charge par {ticket['assigned_to_name']}")
+        if status == "pending_review":
+            if st.button("Prendre en charge", key=f"take_{ticket_id}", icon=":material/play_arrow:"):
+                run_action(api_client.change_status, token, ticket_id, "in_progress")
+        elif mine:
+            if st.button("Remettre à traiter", key=f"release_{ticket_id}", icon=":material/undo:"):
+                run_action(api_client.change_status, token, ticket_id, "pending_review")
+
+        if mine:
+            with st.expander("Répondre"):
+                with st.form(f"reply_{ticket_id}"):
+                    text = st.text_area("Réponse au client", key=f"text_{ticket_id}", max_chars=5000)
+                    sent = st.form_submit_button("Envoyer la réponse", type="primary")
+                if sent:
+                    if text.strip():
+                        run_action(api_client.reply_to_ticket, token, ticket_id, text)
+                    else:
+                        st.warning("La réponse est vide.")
+
+
+def kanban_page(token: str, user: dict) -> None:
+    page_header("Tickets", "Prenez en charge les demandes et répondez à vos clients.")
+    try:
+        tickets = api_client.manager_tickets(token)
+    except api_client.ApiError as exc:
+        handle_error(exc)
+        return
+    query = st.text_input(
+        "Rechercher",
+        placeholder="Rechercher par mot-clé, client ou numéro (ex. #3), puis Entrée",
+        label_visibility="collapsed",
+        key="manager_search",
+    )
+    tickets = filter_tickets(tickets, query)
+
+    for column, status in zip(st.columns(3), KANBAN_STATUSES):
+        items = [t for t in tickets if t["status"] == status]
+        with column:
+            st.markdown(f"{chip(status)} &nbsp; **{len(items)}**", unsafe_allow_html=True)
+            if not items:
+                st.caption("Aucun ticket")
+            for ticket in items[:MAX_PER_COLUMN]:
+                kanban_card(token, user, ticket)
+            if len(items) > MAX_PER_COLUMN:
+                st.caption(f"{len(items) - MAX_PER_COLUMN} autres : affinez la recherche.")
+
+
+def manager_area(user: dict, token: str) -> None:
+    current = sidebar(MANAGER_NAV, user)
+    if current == "Tickets":
+        kanban_page(token, user)
+    else:
+        manager_dashboard(token)
 
 user = st.session_state.get("user")
 token = st.session_state.get("token")
@@ -263,6 +379,6 @@ token = st.session_state.get("token")
 if not user or not token:
     auth_screen()
 elif user["role"] == "manager":
-    manager_placeholder()
+    manager_area(user, token)
 else:
     client_area(user, token)
