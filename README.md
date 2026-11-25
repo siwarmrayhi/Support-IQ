@@ -294,7 +294,7 @@ docs/         README visuals and screenshots
 
 ## 🚧 Known limitations
 
-- The corpus is small and was designed together with the evaluation set: the scores do not prove generalisation.
+- The corpus is small and was designed by me with the evaluation set: the scores do not prove generalisation.
 - Only the **decision** is measured, not the wording of the answers or a hallucination rate.
 - The same model writes and verifies the answer, so it shares its own blind spots. The validator was tested by hand on a single crude false answer.
 - Regeneration is not guided: the flagged sentence is not passed back to the writer.
